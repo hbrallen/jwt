@@ -105,7 +105,35 @@ func(token *Token)DecodeCom(jwt string)(payLoad []byte,header []byte,hscode stri
 	return payLoadByte,headerByte,HS256Rs,nil
 }
 
+//Decode a jwt string
+func (token *Token) DecodeL(jwt string) (payLoad map[string]interface{},header map[string]interface{},HS256Result string,err error){
 
+    jwtArr :=strings.Split(jwt,".")
+    if len(jwtArr)!=3{
+        return nil,nil,"",errors.New("jwt格式不正确，无法解码出三项")
+    }
+    headerStr := jwtArr[0]
+    payLoadStr := jwtArr[1]
+    HS256Rs := jwtArr[2]
+
+    payLoadByte,err := base64.RawStdEncoding.DecodeString(payLoadStr)
+    headerByte,err := base64.RawStdEncoding.DecodeString(headerStr)
+    fmt.Println("payLoadByte : ", string(payLoadByte))
+    fmt.Println("headerByte : ", string(headerByte))
+    if err!=nil {
+        fmt.Println(err)
+        return nil,nil,"",err
+    }
+    payLoadMap := make(map[string]interface{})
+    headerMap := make(map[string]interface{})
+    if err:=json.Unmarshal(payLoadByte,&payLoadMap);err!=nil{
+        return nil,nil,"",err
+    }
+    if err:=json.Unmarshal(headerByte,&headerMap);err!=nil{
+        return nil,nil,"",err
+    }
+    return payLoadMap,headerMap,HS256Rs,nil
+}
 
 //Decode a jwt string
 func (token *Token) Decode(jwt string) (payLoad map[string]string,header map[string]string,HS256Result string,err error){
